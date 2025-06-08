@@ -1,16 +1,19 @@
 <template>
   <div id="app">
-    <LoginForm />
+<!--    <LoginForm />-->
+    <HomePage />
   </div>
 </template>
 
 <script>
 import LoginForm from './components/LoginForm.vue';
+import HomePage from "./components/HomePage.vue";
+
 
 export default {
   name: 'App',
   components: {
-    HomeView,
+    HomePage,
     LoginForm,
   },
 };
