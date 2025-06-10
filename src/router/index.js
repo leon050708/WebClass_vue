@@ -1,24 +1,28 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router';
 
-import HomePage from '@/components/HomePage.vue'
+import HomePage from '@/components/HomePage.vue';
+import LoginForm from '@/components/LoginForm.vue';
 import Test from "@/components/test.vue";
-import Login from "@/components/LoginForm.vue"
-
+import Welcome from "@/components/Welcome.vue";
+import UserPage from "@/components/UserPage.vue";
+import ClassPage from "@/components/ClassSearchPage.vue"
+import scClassPage from "@/components/scClassSearchPage.vue"
 const routes = [
     {
         path: '/',
         component: HomePage,
-        children: []
-    },
-    {
-        path: '/test',
-        component: Test,
-        children: []
+        children: [
+            { path: '', name: 'Welcome', component: Welcome },
+            { path: 'user/:id', name: 'UserPage', component: UserPage },
+            { path: 'class', name: 'ClassPage', component: ClassPage },
+            { path: 'scclass', name: 'scClassPage', component: scClassPage },
+            { path: 'test/:AInt/:AString', name: 'Test', component: Test, props: true },
+        ]
     },
     {
         path: '/login',
-        component: Login,
-        children: []
+        name: 'Login',
+        component: LoginForm,
     }
 ];
 

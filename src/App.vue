@@ -1,7 +1,7 @@
 <template>
   <div id="app">
 <!--    <LoginForm />-->
-    <HomePage />
+    <router-view />
   </div>
 </template>
 

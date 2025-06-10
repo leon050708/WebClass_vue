@@ -32,9 +32,9 @@ export default {
     return {
       username: '',
       password: '',
-      displayMessage: '', // 用于显示 "xx登录成功" 或 "登录失败"
-      messageType: '', // 'success' or 'error'
-      loggedInUserInfo: null, // 存储登录成功的用户信息
+      displayMessage: '',
+      messageType: '',
+      loggedInUserInfo: null,
     };
   },
   computed: {
@@ -54,21 +54,31 @@ export default {
           passw: this.password,
         });
 
-        // 后端成功时返回 User 对象，失败时返回 null (或空body)
-        if (response.data && response.data.name) { // 检查 response.data 是否是有效的用户对象
+        if (response.data && response.data.id) { // 检查ID是否存在来判断成功
           this.loggedInUserInfo = response.data;
-          // 作业要求: "**** 登录成功"
           this.displayMessage = `${this.loggedInUserInfo.name} 登录成功`;
           this.messageType = 'success';
+
+          // ----------- 新增核心逻辑 ----------- //
+          // 1. 将用户ID保存到 localStorage，以便在整个应用中保持登录状态
+          localStorage.setItem('userId', this.loggedInUserInfo.id);
+
+          // 2. 使用 this.$router 跳转到用户的专属页面
+          //    我们将跳转到名为 'UserPage' 的路由，并将id作为参数
+          this.$router.push({
+            name: 'UserPage',
+            params: { id: this.loggedInUserInfo.id }
+          });
+          // ------------------------------------ //
+
         } else {
-          // 后端返回 null 或 response.data 为空对象/无效用户对象
-          this.displayMessage = '登录失败';
+          this.displayMessage = '登录失败: 无效的用户信息返回';
           this.messageType = 'error';
         }
       } catch (error) {
         console.error('登录请求失败:', error);
         this.loggedInUserInfo = null;
-        if (error.response && error.response.status === 401) { // 假设后端对失败返回401
+        if (error.response && error.response.status === 401) {
           this.displayMessage = '登录失败: 用户名或密码错误。';
         } else if (error.response && error.response.data) {
           this.displayMessage = `登录失败: ${error.response.data.message || '请检查凭据'}`;
@@ -84,6 +94,7 @@ export default {
 </script>
 
 <style scoped>
+/* 您的样式保持不变 */
 .login-form {
   width: 350px;
   margin: 50px auto;
