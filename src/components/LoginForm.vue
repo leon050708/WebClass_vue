@@ -71,6 +71,7 @@ import axios from 'axios';
 import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { User, Lock } from '@element-plus/icons-vue';
+import { useFavorites } from '@/stores/favoritesStore';
 
 // --- 状态管理 ---
 const form = reactive({
@@ -85,6 +86,7 @@ const passwordInputRef = ref(null);
 // --- 路由 ---
 const router = useRouter();
 const route = useRoute();
+const { fetchFavorites } = useFavorites();
 
 // --- 生命周期钩子 ---
 onMounted(() => {
@@ -115,7 +117,13 @@ const handleSubmit = async () => {
     if (response.data && response.data.id) {
       const userInfo = response.data;
       localStorage.setItem('userId', userInfo.id);
+      localStorage.setItem('userName', userInfo.name);
+
+      await fetchFavorites();
+
       ElMessage.success(`${userInfo.name} 登录成功!`);
+
+      // --- 核心改动：跳转到UserPage ---
       router.push({
         name: 'UserPage',
         params: {

@@ -4,7 +4,6 @@
       <el-header>
         <div class="header-content">
           <div class="logo-title">
-<!--            <img alt="logo" src="@/assets/logo.svg" class="logo" />-->
             <h3>课程查询系统</h3>
           </div>
           <div class="toolbar">
@@ -34,23 +33,23 @@
                 <template #title>
                   <el-icon><Search /></el-icon>课程查询
                 </template>
-                <el-menu-item index="/class" @click="to1_1">人文选修查询</el-menu-item>
-                <el-menu-item index="/scclass" @click="to1_2">软件工程培养计划</el-menu-item>
+                <el-menu-item index="/class">人文选修查询</el-menu-item>
+                <el-menu-item index="/scclass">软件工程培养计划</el-menu-item>
               </el-sub-menu>
 
-              <el-sub-menu index="/test-pages">
+              <el-sub-menu index="/favorites">
                 <template #title>
-                  <el-icon><Menu /></el-icon>我的收藏
+                  <el-icon><Star /></el-icon>我的收藏
                 </template>
-                <el-menu-item index="/test/3/cao" @click="to2_1">人文选修</el-menu-item>
-                <el-menu-item index="/test/4/ni" @click="to2_2">计划内课程</el-menu-item>
+                <el-menu-item index="/favorites/humanities">人文选修</el-menu-item>
+                <el-menu-item index="/favorites/planned">计划内课程</el-menu-item>
               </el-sub-menu>
             </el-menu>
           </el-scrollbar>
         </el-aside>
 
         <el-main>
-          <router-view />
+          <router-view :key="$route.fullPath" />
         </el-main>
       </el-container>
     </el-container>
@@ -59,12 +58,14 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue'
-import { Search, Menu, User, SwitchButton, UserFilled } from '@element-plus/icons-vue'
+import { Search, Star, User, SwitchButton, UserFilled } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { useFavorites } from '@/stores/favoritesStore';
 
 const router = useRouter()
 const userId = ref<string | null>(null)
+const { clearFavorites } = useFavorites();
 
 onMounted(() => {
   userId.value = localStorage.getItem('userId');
@@ -88,7 +89,9 @@ function logout() {
       }
   ).then(() => {
     localStorage.removeItem('userId');
+    localStorage.removeItem('userName');
     userId.value = null;
+    clearFavorites();
     ElMessage.success('已成功退出');
     router.push('/');
   }).catch(() => {
@@ -97,31 +100,16 @@ function logout() {
 }
 
 function toUserCenter() {
-  if (userId.value) {
-    router.push({ name: 'UserPage', params: { id: userId.value } })
+  const currentUserId = localStorage.getItem('userId');
+  const currentUserName = localStorage.getItem('userName');
+  if (currentUserId && currentUserName) {
+    router.push({ name: 'UserPage', params: { id: currentUserId, name: currentUserName } })
   }
-}
-function to1_1() {
-  router.push({ name: 'ClassPage' })
-}
-function to1_2() {
-  router.push({ name: 'scClassPage' })
-}
-function to2_1() {
-  router.push({
-    name: 'Test',
-    params: { AInt: 3, AString: 'cao' }
-  })
-}
-function to2_2() {
-  router.push({
-    name: 'Test',
-    params: { AInt: 4, AString: 'ni' }
-  })
 }
 </script>
 
 <style scoped>
+/* 样式保持不变 */
 .layout-container-demo .el-header {
   position: relative;
   background-color: #ffffff;
@@ -140,9 +128,6 @@ function to2_2() {
   align-items: center;
   gap: 10px;
 }
-.logo {
-  height: 32px;
-}
 .logo-title h3 {
   margin: 0;
   font-size: 18px;
@@ -157,7 +142,6 @@ function to2_2() {
   border-right: none;
 }
 .layout-container-demo .el-main {
-  /* 关键：给主内容区增加内边距 */
   padding: 20px;
 }
 .layout-container-demo .toolbar {

@@ -15,7 +15,7 @@
         {{ userId }}
       </el-descriptions-item>
       <el-descriptions-item label="用户名" label-align="right" align="center">
-        <el-tag size="small">user_{{ userName }}</el-tag>
+        <el-tag size="small">{{ userName }}</el-tag>
       </el-descriptions-item>
       <el-descriptions-item label="角色" label-align="right" align="center">
         普通用户
@@ -38,8 +38,9 @@ const userId = ref('');
 const userName = ref('');
 
 onMounted(() => {
-  userId.value = route.params.id;
-  userName.value = route.params.name;
+  // 优先从路由参数获取，其次从localStorage获取，确保刷新后数据不丢失
+  userId.value = route.params.id || localStorage.getItem('userId');
+  userName.value = route.params.name || localStorage.getItem('userName');
 });
 </script>
 

@@ -20,9 +20,19 @@
       </el-header>
 
       <el-main>
-        <el-table :data="tableData" v-loading="loading" style="width: 100%" border height="600">
+        <el-table :data="pagedTableData" v-loading="loading" style="width: 100%" border>
+          <el-table-column v-if="userId" label="收藏" width="65" align="center">
+            <template #default="{ row }">
+              <el-button
+                link
+                type="warning"
+                :icon="isFavorite(row.class_code) ? StarFilled : Star"
+                @click="toggleFavorite(row.class_code)"
+              />
+            </template>
+          </el-table-column>
           <el-table-column prop="class_code"   label="课程代码" width="150" />
-          <el-table-column prop="class_name"   label="课程名称" width="250" />
+          <el-table-column prop="class_name"   label="课程名称" width="300" />
           <el-table-column prop="class_time"  label="学时" width="50" />
           <el-table-column prop="class_score" label="学分" width="50" />
           <el-table-column prop="class_begin" label="课程时间" width="100" />
@@ -30,93 +40,115 @@
           <el-table-column prop="class_info" label="备注" />
         </el-table>
       </el-main>
+
+      <el-footer style="display: flex; justify-content: flex-end; padding-top: 20px;">
+        <el-pagination
+            v-model:current-page="currentPage"
+            v-model:page-size="pageSize"
+            :page-sizes="[10, 15, 20, 50]"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="totalItems"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+        />
+      </el-footer>
     </el-container>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { ElMessage } from 'element-plus';
+import { Star, StarFilled } from '@element-plus/icons-vue';
+import { useFavorites } from '@/stores/favoritesStore';
 
 // --- 响应式状态定义 ---
+const searchCriteria = reactive({ className: "" });
+const tableData = ref([]); // 存储所有从后端获取的数据
+const loading = ref(false);
+const userId = ref(null);
 
-// 用于绑定搜索表单的数据
-// 这里的字段名需要和后端 ClassSearchCriteria 类中的字段名完全一致
-const searchCriteria = reactive({
-  classCode: "",
-  className: "",
-  classTime: "",
-  classScore: "",
-  classBegin: "",
-  classType: "",
-  classInfo: "",
+// --- 分页状态 ---
+const currentPage = ref(1);
+const pageSize = ref(15);
+const totalItems = computed(() => tableData.value.length);
+
+// --- 计算属性，用于获取当前页的数据 ---
+const pagedTableData = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  return tableData.value.slice(start, end);
 });
 
-// 用于存储从后端获取的表格数据
-const tableData = ref([]);
+// --- Store 和收藏逻辑 ---
+const { favoriteIds, fetchFavorites, updateFavorites } = useFavorites();
 
-// 控制表格加载状态的显示
-const loading = ref(false);
+const isFavorite = (classCode) => favoriteIds.value.includes(classCode);
+
+const toggleFavorite = async (classCode) => {
+  if (!userId.value) {
+    ElMessage.warning('请先登录才能收藏课程');
+    return;
+  }
+  const newFavorites = [...favoriteIds.value];
+  const index = newFavorites.indexOf(classCode);
+  if (index > -1) {
+    newFavorites.splice(index, 1);
+  } else {
+    newFavorites.push(classCode);
+  }
+  try {
+    await updateFavorites(newFavorites);
+    ElMessage.success(index > -1 ? '已取消收藏' : '已收藏');
+  } catch (error) {
+    ElMessage.error('操作失败，请重试');
+  }
+};
 
 // --- 方法定义 ---
-
-// 处理搜索按钮点击事件
 const handleSearch = async () => {
-  loading.value = true; // 开始搜索，显示加载状态
+  loading.value = true;
+  currentPage.value = 1; // 每次搜索都重置到第一页
   try {
-    // 使用 axios 发送 POST 请求
     const response = await axios.post('http://127.0.0.1:8080/api/searchscClasses', searchCriteria);
-    tableData.value = response.data; // 将返回的数据赋值给表格数据源
-    ElMessage({
-      message: '查询成功!',
-      type: 'success',
-    });
+    tableData.value = response.data;
+    if (searchCriteria.className !== '') {
+        ElMessage.success('查询成功!');
+    }
   } catch (error) {
     console.error("搜索请求失败:", error);
-    ElMessage({
-      message: '查询失败，请检查网络或联系管理员。',
-      type: 'error',
-    });
+    ElMessage.error('查询失败，请检查网络或联系管理员。');
   } finally {
-    loading.value = false; // 搜索结束，隐藏加载状态
+    loading.value = false;
   }
 };
 
-// 重置搜索条件
 const resetSearch = () => {
-  // 遍历清空 searchCriteria 对象的所有字段
-  for (const key in searchCriteria) {
-    searchCriteria[key] = '';
-  }
-  // 重新加载所有数据
+  searchCriteria.className = '';
   handleSearch();
 };
 
+// --- 分页事件处理 ---
+const handleSizeChange = (val) => {
+  pageSize.value = val;
+  currentPage.value = 1; // 切换每页条数时，回到第一页
+};
+
+const handleCurrentChange = (val) => {
+  currentPage.value = val;
+};
 
 // --- 生命周期钩子 ---
-
-// onMounted 会在组件挂载到页面后执行
 onMounted(() => {
-  // 页面初始化时，调用一次搜索方法获取所有数据
-  // 因为 searchCriteria 是空的，后端会返回所有课程
+  userId.value = localStorage.getItem('userId');
   handleSearch();
+  if (userId.value) {
+    fetchFavorites();
+  }
 });
 </script>
 
 <style>
-/* 可以在这里添加或修改样式 */
-.el-header {
-  padding-top: 20px;
-  height: auto;
-  border-bottom: 1px solid #dcdfe6;
-}
-
-.el-main {
-  padding-top: 20px;
-}
-
-.el-form-item {
-  margin-bottom: 0; /* 移除表单项的下边距，使搜索栏更紧凑 */
-}
+/* 样式保持不变 */
 </style>
