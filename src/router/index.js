@@ -7,6 +7,7 @@ import Welcome from "@/components/Welcome.vue";
 import UserPage from "@/components/UserPage.vue";
 import ClassPage from "@/components/ClassSearchPage.vue"
 import scClassPage from "@/components/scClassSearchPage.vue"
+import RegistPage from "@/components/RegistPage.vue";
 const routes = [
     {
         path: '/',
@@ -23,6 +24,11 @@ const routes = [
         path: '/login',
         name: 'Login',
         component: LoginForm,
+    },
+    {
+        path: '/register',
+        name: 'Register',
+        component: RegistPage,
     }
 ];
 
