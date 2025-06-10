@@ -1,14 +1,27 @@
-<script setup>
-
-</script>
-
 <template>
-  <div style="padding: 20px;">
-    <h1>欢迎使用本系统！</h1>
-    <p>请点击右上角登录以使用更多功能。</p>
-  </div>
+  <el-card shadow="never">
+    <template #header>
+      <div class="card-header">
+        <span>欢迎</span>
+      </div>
+    </template>
+    <el-result
+        icon="success"
+        title="欢迎使用本系统！"
+        sub-title="请通过左侧菜单开始您的操作，或点击右上角登录/查看个人信息。"
+    >
+      <template #extra>
+        <el-button type="primary" @click="$router.push('/login')">立即登录</el-button>
+      </template>
+    </el-result>
+  </el-card>
 </template>
 
-<style scoped>
+<script setup>
+</script>
 
+<style scoped>
+.card-header {
+  font-weight: bold;
+}
 </style>

@@ -1,43 +1,49 @@
 <template>
   <div class="common-layout">
     <el-container class="layout-container-demo">
-      <el-header style="text-align: right; font-size: 12px">
-        <div class="toolbar">
-          <div v-if="!userId">
-            <el-button type="primary" @click="login">登录</el-button>
+      <el-header>
+        <div class="header-content">
+          <div class="logo-title">
+<!--            <img alt="logo" src="@/assets/logo.svg" class="logo" />-->
+            <h3>课程查询系统</h3>
           </div>
-          <div v-else>
-            <el-dropdown>
-              <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item @click="toUserCenter">个人中心</el-dropdown-item>
-                  <el-dropdown-item divided @click="logout">退出登录</el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
+          <div class="toolbar">
+            <div v-if="!userId">
+              <el-button type="primary" @click="login" :icon="User">登录</el-button>
+            </div>
+            <div v-else>
+              <el-dropdown>
+                <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item @click="toUserCenter" :icon="UserFilled">个人中心</el-dropdown-item>
+                    <el-dropdown-item divided @click="logout" :icon="SwitchButton">退出登录</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
           </div>
         </div>
       </el-header>
 
       <el-container>
-        <el-aside width="200px">
+        <el-aside width="220px">
           <el-scrollbar>
-            <el-menu :default-openeds="['1', '3']">
-              <el-sub-menu index="1">
+            <el-menu router :default-active="$route.path">
+              <el-sub-menu index="/class-search">
                 <template #title>
-                  <el-icon><message /></el-icon>课程查询
+                  <el-icon><Search /></el-icon>课程查询
                 </template>
-                <el-menu-item index="1-1" @click="to1_1">人文选秀查询</el-menu-item>
-                <el-menu-item index="1-2" @click="to1_2">软件工程培养计划</el-menu-item>
+                <el-menu-item index="/class" @click="to1_1">人文选修查询</el-menu-item>
+                <el-menu-item index="/scclass" @click="to1_2">软件工程培养计划</el-menu-item>
               </el-sub-menu>
 
-              <el-sub-menu index="2">
+              <el-sub-menu index="/test-pages">
                 <template #title>
-                  <el-icon><message /></el-icon>Navigator One
+                  <el-icon><Menu /></el-icon>我的收藏
                 </template>
-                <el-menu-item index="2-1" @click="to2_1">3</el-menu-item>
-                <el-menu-item index="2-2" @click="to2_2">4</el-menu-item>
+                <el-menu-item index="/test/3/cao" @click="to2_1">人文选修</el-menu-item>
+                <el-menu-item index="/test/4/ni" @click="to2_2">计划内课程</el-menu-item>
               </el-sub-menu>
             </el-menu>
           </el-scrollbar>
@@ -53,16 +59,15 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue'
-import { Message } from '@element-plus/icons-vue'
+import { Search, Menu, User, SwitchButton, UserFilled } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox } from 'element-plus';
 
 const router = useRouter()
 const userId = ref<string | null>(null)
 
-// 页面加载时，检查 localStorage 中是否有 userId
 onMounted(() => {
   userId.value = localStorage.getItem('userId');
-  // 监听storage事件，以便在其他标签页登录/退出时，本页面能同步状态
   window.addEventListener('storage', () => {
     userId.value = localStorage.getItem('userId');
   })
@@ -73,12 +78,22 @@ function login() {
 }
 
 function logout() {
-  console.log('执行退出操作...');
-  // 从 localStorage 移除 userId
-  localStorage.removeItem('userId');
-  userId.value = null;
-  // 退出后跳转到首页
-  router.push('/');
+  ElMessageBox.confirm(
+      '您确定要退出登录吗?',
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+  ).then(() => {
+    localStorage.removeItem('userId');
+    userId.value = null;
+    ElMessage.success('已成功退出');
+    router.push('/');
+  }).catch(() => {
+    // 用户取消操作
+  });
 }
 
 function toUserCenter() {
@@ -86,61 +101,70 @@ function toUserCenter() {
     router.push({ name: 'UserPage', params: { id: userId.value } })
   }
 }
-
 function to1_1() {
-  router.push({
-    name: 'ClassPage'
-  })
+  router.push({ name: 'ClassPage' })
 }
 function to1_2() {
-  router.push({
-    name: 'scClassPage'
-  })
+  router.push({ name: 'scClassPage' })
 }
 function to2_1() {
   router.push({
     name: 'Test',
-    params: {
-      AInt: 3,
-      AString: 'cao'
-    }
+    params: { AInt: 3, AString: 'cao' }
   })
 }
 function to2_2() {
   router.push({
     name: 'Test',
-    params: {
-      AInt: 4,
-      AString: 'cao'
-    }
+    params: { AInt: 4, AString: 'ni' }
   })
 }
 </script>
 
 <style scoped>
-/* 样式保持不变 */
 .layout-container-demo .el-header {
   position: relative;
-  background-color: var(--el-color-primary-light-7);
+  background-color: #ffffff;
   color: var(--el-text-color-primary);
+  border-bottom: 1px solid var(--el-border-color-light);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+.logo-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo {
+  height: 32px;
+}
+.logo-title h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
 }
 .layout-container-demo .el-aside {
   color: var(--el-text-color-primary);
-  background: var(--el-color-primary-light-8);
+  background: #ffffff;
   height: calc(100vh - 60px);
 }
 .layout-container-demo .el-menu {
   border-right: none;
 }
 .layout-container-demo .el-main {
-  padding: 0;
+  /* 关键：给主内容区增加内边距 */
+  padding: 20px;
 }
 .layout-container-demo .toolbar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 100%;
-  right: 20px;
 }
 .el-avatar {
   cursor: pointer;

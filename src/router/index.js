@@ -14,7 +14,7 @@ const routes = [
         component: HomePage,
         children: [
             { path: '', name: 'Welcome', component: Welcome },
-            { path: 'user/:id', name: 'UserPage', component: UserPage },
+            { path: 'user/:id/:name', name: 'UserPage', component: UserPage },
             { path: 'class', name: 'ClassPage', component: ClassPage },
             { path: 'scclass', name: 'scClassPage', component: scClassPage },
             { path: 'test/:AInt/:AString', name: 'Test', component: Test, props: true },

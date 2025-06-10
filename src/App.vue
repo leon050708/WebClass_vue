@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-<!--    <LoginForm />-->
     <router-view />
   </div>
 </template>
@@ -8,7 +7,6 @@
 <script>
 import LoginForm from './components/LoginForm.vue';
 import HomePage from "./components/HomePage.vue";
-
 
 export default {
   name: 'App',
@@ -20,13 +18,14 @@ export default {
 </script>
 
 <style>
-/* 全局样式 (可选) */
+/* 全局样式 */
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
+  /* 新增：设置一个柔和的背景色 */
+  background-color: #f4f7f9;
 }
 
 .common-layout {

@@ -20,6 +20,22 @@
 
 <script setup>
 import { defineProps } from 'vue';
+import { ref, onMounted } from 'vue';
+
+const userId = ref('');
+
+import { useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus';
+
+const router = useRouter();
+
+onMounted(() => {
+  const loggedInUserId = localStorage.getItem('userId');
+  if (!loggedInUserId) {
+    ElMessage.warning('请先登录再访问该页面');
+    router.push({ name: 'Welcome' }); // 或者跳转到登录页
+  }
+});
 
 // 使用 defineProps 定义组件期望接收的 props
 // 因为路由参数总是字符串，我们需要用 Number 构造函数来转换类型

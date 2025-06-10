@@ -1,20 +1,55 @@
 <template>
-  <div style="padding: 20px;">
-    <h1>个人中心</h1>
-    <p v-if="userId">当前登录的用户ID是: <strong>{{ userId }}</strong></p>
-    <p>这里可以展示该用户的详细信息、设置等。</p>
-  </div>
+  <el-card shadow="never">
+    <template #header>
+      <div class="card-header">
+        <span><el-icon><User /></el-icon> 个人中心</span>
+      </div>
+    </template>
+    <el-descriptions
+        v-if="userId"
+        title="用户信息"
+        :column="2"
+        border
+    >
+      <el-descriptions-item label="用户ID" label-align="right" align="center">
+        {{ userId }}
+      </el-descriptions-item>
+      <el-descriptions-item label="用户名" label-align="right" align="center">
+        <el-tag size="small">user_{{ userName }}</el-tag>
+      </el-descriptions-item>
+      <el-descriptions-item label="角色" label-align="right" align="center">
+        普通用户
+      </el-descriptions-item>
+      <el-descriptions-item label="注册时间" label-align="right" align="center">
+        2025-06-10
+      </el-descriptions-item>
+    </el-descriptions>
+    <el-empty v-else description="无法获取用户信息，请先登录" />
+  </el-card>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { User } from '@element-plus/icons-vue';
 
 const route = useRoute();
 const userId = ref('');
+const userName = ref('');
 
 onMounted(() => {
-  // 从URL参数中获取用户ID
   userId.value = route.params.id;
+  userName.value = route.params.name;
 });
 </script>
+
+<style scoped>
+.card-header {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+}
+.card-header .el-icon {
+  margin-right: 8px;
+}
+</style>
